@@ -31,7 +31,6 @@ internal class CreateProductCommandHandler(IDocumentSession session)
         };
 
         // TODO save to db   
-
         session.Store(product);
         await session.SaveChangesAsync(cancellationToken);
 
