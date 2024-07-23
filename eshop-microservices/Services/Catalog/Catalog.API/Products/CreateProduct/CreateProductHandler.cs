@@ -10,17 +10,9 @@ public record CreateProductResult(Guid Id);
 //cqrs library to execute the commands or queries
 //with mediator receives a request and process it, encapsulates business logic
 
-internal class CreateProductCommandHandler
+internal class CreateProductCommandHandler(IDocumentSession session)
     : ICommandHandler<CreateProductCommand, CreateProductResult>
 {
-
-    private readonly IDocumentSession _session;
-
-    public CreateProductCommandHandler(IDocumentSession session)
-    {
-        _session = session;
-    }
-
     public async Task<CreateProductResult> Handle(CreateProductCommand command, CancellationToken cancellationToken)
     {
         //Business logic to create a product
@@ -38,9 +30,12 @@ internal class CreateProductCommandHandler
             Price = command.Price
         };
 
+
+
+
         // TODO save to db   
-        _session.Store(product);
-        await _session.SaveChangesAsync(cancellationToken);
+        session.Store(product);
+        await session.SaveChangesAsync(cancellationToken);
 
         //return result
 

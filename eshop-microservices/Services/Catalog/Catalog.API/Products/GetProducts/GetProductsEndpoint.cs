@@ -6,6 +6,9 @@ public class GetProductsEndpoint : ICarterModule
 {
     public void AddRoutes(IEndpointRouteBuilder app)
     {
+        // we sent to mediator object ( MediatR ) where Mediator routes this request to
+        // query handler that is implemented from IQueryHandler<GetProductsQuery, x_x_x >
+        // and response is sent as defined in declatrion of handler.
         app.MapGet("/products", async (ISender sender) =>
         {
             var result = await sender.Send(new GetProductsQuery());
