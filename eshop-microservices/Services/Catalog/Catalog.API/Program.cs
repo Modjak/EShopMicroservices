@@ -22,6 +22,10 @@ builder.Services.AddMarten(opts =>
     opts.Connection(builder.Configuration.GetConnectionString("Database")!);
 }).UseLightweightSessions();
 
+// If docker is not up , we will encounter with error. For now 
+// I wont handle this bur TODO
+if(builder.Environment.IsDevelopment())
+    builder.Services.InitializeMartenWith<CatalogInitialData>();
 
 
 var app = builder.Build();
