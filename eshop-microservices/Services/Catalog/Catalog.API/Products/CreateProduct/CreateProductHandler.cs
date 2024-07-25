@@ -6,11 +6,23 @@ public record CreateProductCommand(string Name, List<string> Category, string De
 public record CreateProductResult(Guid Id);
 
 
+public class CreateProductCommandValidator : AbstractValidator<CreateProductCommand>
+{
+    public CreateProductCommandValidator()
+    {
+        RuleFor(x => x.Name).NotEmpty().WithMessage("Name is required");
+        RuleFor(x => x.Category).NotEmpty().WithMessage("Category is required");
+        RuleFor(x => x.ImageFile).NotEmpty().WithMessage("ImageFile is required");
+        RuleFor(x => x.Price).GreaterThan(0).WithMessage("Price must be greater than 0");
+    }
+}
+
+
 // Vertical slcie architecture
 //cqrs library to execute the commands or queries
 //with mediator receives a request and process it, encapsulates business logic
 
-internal class CreateProductCommandHandler(IDocumentSession session)
+internal class CreateProductCommandHandler(IDocumentSession session, ILogger<CreateProductCommandHandler> logger )
     : ICommandHandler<CreateProductCommand, CreateProductResult>
 {
     public async Task<CreateProductResult> Handle(CreateProductCommand command, CancellationToken cancellationToken)
@@ -21,6 +33,7 @@ internal class CreateProductCommandHandler(IDocumentSession session)
         //save to db
         //return CreateProductResult result
 
+        logger.LogInformation("CreateProductCommandHandler.Handle called with {@Command}", command);
         var product = new Product
         {
             Name = command.Name,
@@ -29,8 +42,6 @@ internal class CreateProductCommandHandler(IDocumentSession session)
             ImageFile = command.ImageFile,
             Price = command.Price
         };
-
-
 
 
         // TODO save to db   
