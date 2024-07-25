@@ -23,7 +23,7 @@ public class DeleteProductHandler
 
         if(product is null)
         {
-            throw new ProductNotFoundException();
+            throw new ProductNotFoundException(command.Id);
         }
 
         session.Delete<Product>(product.Id);

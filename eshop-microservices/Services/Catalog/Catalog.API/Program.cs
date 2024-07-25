@@ -1,9 +1,8 @@
-using BuildingBlocks.Behaviors;
-
 var builder = WebApplication.CreateBuilder(args);
 
 
-//Add services to the container 
+//Add services to the container.
+
 var assembly = typeof(Program).Assembly;
 builder.Services.AddCarter();
 builder.Services.AddMediatR(config =>
@@ -20,14 +19,16 @@ builder.Services.AddMarten(opts =>
     opts.Connection(builder.Configuration.GetConnectionString("Database")!);
 }).UseLightweightSessions();
 
+builder.Services.AddExceptionHandler<CustomExceptionHandler>();
 
 
 var app = builder.Build();
 
 
 //Configure the Http request pipeline
-app.MapCarter(); 
-// scans the ALL classes that implements ICarterModule and maps the required HTTP methods
+app.MapCarter();  // scans the ALL classes that implements ICarterModule and maps the required HTTP methods
+
+app.UseExceptionHandler(options => { });
 
 
 app.Run();
