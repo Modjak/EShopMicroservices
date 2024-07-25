@@ -22,7 +22,7 @@ public class CreateProductCommandValidator : AbstractValidator<CreateProductComm
 //cqrs library to execute the commands or queries
 //with mediator receives a request and process it, encapsulates business logic
 
-internal class CreateProductCommandHandler(IDocumentSession session, ILogger<CreateProductCommandHandler> logger )
+internal class CreateProductCommandHandler(IDocumentSession session)
     : ICommandHandler<CreateProductCommand, CreateProductResult>
 {
     public async Task<CreateProductResult> Handle(CreateProductCommand command, CancellationToken cancellationToken)
@@ -33,7 +33,6 @@ internal class CreateProductCommandHandler(IDocumentSession session, ILogger<Cre
         //save to db
         //return CreateProductResult result
 
-        logger.LogInformation("CreateProductCommandHandler.Handle called with {@Command}", command);
         var product = new Product
         {
             Name = command.Name,

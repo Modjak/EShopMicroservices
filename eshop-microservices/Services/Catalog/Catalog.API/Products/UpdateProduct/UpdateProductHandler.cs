@@ -23,23 +23,13 @@ public class UpdateProductCommandValidator : AbstractValidator<UpdateProductComm
     }
 }
 internal class UpdateProductHandler
+    (IDocumentSession session)
     : ICommandHandler<UpdateProductCommand, UpdateProductResult>
 {
-
-    private readonly ILogger<UpdateProductHandler> _logger;
-    private readonly IDocumentSession _session;
-
-    public UpdateProductHandler(ILogger<UpdateProductHandler> logger, IDocumentSession session)
-    {
-        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        _session = session ?? throw new ArgumentNullException(nameof(session));
-    }
-
     public async Task<UpdateProductResult> Handle(UpdateProductCommand command, CancellationToken cancellationToken)
     {
-        _logger.LogInformation("UpdateProductHandler.Handle called with {@Command}", command);
 
-        var product = await _session.LoadAsync<Product>(command.Id, cancellationToken);
+        var product = await session.LoadAsync<Product>(command.Id, cancellationToken);
 
         if(product is null)
         {
@@ -52,9 +42,9 @@ internal class UpdateProductHandler
         product.ImageFile = command.ImageFile;
         product.Price = command.Price;
 
-        _session.Update(product);
+        session.Update(product);
 
-        await _session.SaveChangesAsync(cancellationToken);
+        await session.SaveChangesAsync(cancellationToken);
 
         return new UpdateProductResult(true);
     }
