@@ -5,13 +5,13 @@
 public record DeleteBasketResponse(bool IsSuccess);
 public class DeleteBasketEndpoints : ICarterModule
 {
-    public async void AddRoutes(IEndpointRouteBuilder app)
+    public void AddRoutes(IEndpointRouteBuilder app)
     {
         app.MapDelete("/basket/{userName}", async (string userName, ISender Sender) =>
         {
             var command = new DeleteBasketCommand(userName);
 
-            var result = Sender.Send(command);
+            var result = await Sender.Send(command);
 
             var response = result.Adapt<DeleteBasketResponse>();
 
