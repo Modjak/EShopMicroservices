@@ -35,6 +35,8 @@ builder.Services.AddHealthChecks()
 
 var app = builder.Build();
 
+app.UseHttpsRedirection();
+
 
 //Configure the Http request pipeline
 app.MapCarter();  // scans the ALL classes that implements ICarterModule and maps the required HTTP methods
