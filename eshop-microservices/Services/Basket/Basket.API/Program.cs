@@ -1,4 +1,4 @@
-using Weasel.Core;
+using HealthChecks.UI.Client;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -22,8 +22,65 @@ builder.Services.AddMarten(opts =>
     opts.Schema.For<ShoppingCart>().Identity(x => x.UserName); // Set username as a primary key
 }).UseLightweightSessions();
 
-builder.Services.AddScoped<IBasketRepository, BasketRepository>();
-     
+builder.Services.AddScoped<IBasketRepository, BasketRepository>(); //a class requires an IBasketRepository in its constructor, the DI container will provide an instance of BasketRepository.
+builder.Services.Decorate<IBasketRepository, CachedBasketRepository>();
+builder.Services.AddStackExchangeRedisCache(options =>
+{
+    options.Configuration = builder.Configuration.GetConnectionString("Redis");
+    //options.InstanceName = "Basket";
+});
+
+#region How DI Container Resolves Dependencies
+/* 
+ 
+
+Request for IBasketRepository: When GetBasketQueryHandler is created, the DI container sees that it needs an IBasketRepository.
+Decorated Implementation: The container knows from Decorate<IBasketRepository, CachedBasketRepository>() that any IBasketRepository request should be fulfilled by CachedBasketRepository.
+Constructor Injection: The CachedBasketRepository itself needs an IBasketRepository and an IDistributedCache.
+The DI container provides BasketRepository for IBasketRepository.
+The DI container provides the configured Redis cache for IDistributedCache.
+
+ */
+#endregion
+
+#region Manual Registration and Decoration
+
+// Step 1: Register the Concrete Implementation
+
+/*
+ * 
+builder.Services.AddScoped<BasketRepository>();
+builder.Services.AddScoped<IBasketRepository>(provider =>
+{
+    return provider.GetRequiredService<BasketRepository>();
+});
+
+*/
+// Step 2: Register the Decorator
+
+/*
+builder.Services.AddScoped<CachedBasketRepository>();
+builder.Services.AddScoped<IBasketRepository>(provider =>
+{
+    // Get the original IBasketRepository service
+    var repository = provider.GetRequiredService<BasketRepository>();
+
+    // Get the cache service
+    var cache = provider.GetRequiredService<IDistributedCache>();
+
+    // Return a new instance of CachedBasketRepository wrapping the original repository
+    return new CachedBasketRepository(repository, cache);
+});
+
+*/
+#endregion
+
+builder.Services.AddExceptionHandler<CustomExceptionHandler>();
+
+builder.Services.AddHealthChecks()
+    .AddNpgSql(builder.Configuration.GetConnectionString("Database")!)
+    .AddRedis(builder.Configuration.GetConnectionString("Redis")!);
+
 
 /* -----------------   End of adding services-----------------------------  */
 var app = builder.Build();
@@ -32,7 +89,13 @@ var app = builder.Build();
 // Configure the HTTP request pipeline.
 
 app.MapCarter();
+app.UseExceptionHandler(options => { });
 
+app.UseHealthChecks("/health",
+    new HealthCheckOptions
+    {
+        ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
+    });
 
 /* -----------------   End of config of request pipeline-----------------------------  */
 
