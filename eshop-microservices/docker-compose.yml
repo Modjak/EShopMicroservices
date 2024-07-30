@@ -1,18 +1,28 @@
 version: '3.4'
 
 services:    
+  #backing services
   catalogdb:
     image: postgres
   
   basketdb:
     image: postgres
+  
+  distributedcache:
+    image: redis
 
+  #microservices
   catalog.api:
     image: ${DOCKER_REGISTRY-}catalogapi
     build:
       context: .
       dockerfile: Services/Catalog/Catalog.API/Dockerfile
 
+  basket.api:
+    image: ${DOCKER_REGISTRY-}basketapi
+    build:
+      context: .
+      dockerfile: Services/Basket/Basket.API/Dockerfile
 
 volumes:
   postgres_catalog:
