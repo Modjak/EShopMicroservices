@@ -1,10 +1,16 @@
+using Discount.Grpc;
+using Grpc.Net.Client;
 using HealthChecks.UI.Client;
+using System.Net.Sockets;
 
 var builder = WebApplication.CreateBuilder(args);
 
 var assembly = typeof(Program).Assembly;
 
 // Add services to the container
+
+
+//Application Services
 builder.Services.AddCarter();
 builder.Services.AddMediatR(config =>
 {
@@ -15,6 +21,7 @@ builder.Services.AddMediatR(config =>
 });
 
 
+//Data Services
 builder.Services.AddMarten(opts =>
 {
     opts.Connection(builder.Configuration.GetConnectionString("Database")!);
@@ -24,12 +31,25 @@ builder.Services.AddMarten(opts =>
 
 builder.Services.AddScoped<IBasketRepository, BasketRepository>(); //a class requires an IBasketRepository in its constructor, the DI container will provide an instance of BasketRepository.
 builder.Services.Decorate<IBasketRepository, CachedBasketRepository>();
+
 builder.Services.AddStackExchangeRedisCache(options =>
 {
     options.Configuration = builder.Configuration.GetConnectionString("Redis");
     //options.InstanceName = "Basket";
 });
 
+
+//Grpc Services
+
+builder.Services.AddGrpcClient<DiscountProtoService.DiscountProtoServiceClient>(options =>
+{
+    options.Address = new Uri(builder.Configuration["GrpcSettings:DiscountUrl"]!);
+
+});
+
+
+
+//Cross-cutting concerns
 #region How DI Container Resolves Dependencies
 /* 
  
@@ -83,6 +103,7 @@ builder.Services.AddHealthChecks()
 
 
 /* -----------------   End of adding services-----------------------------  */
+
 var app = builder.Build();
 
 
