@@ -11,4 +11,13 @@
     <ProjectReference Include="..\Ordering.Domain\Ordering.Domain.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Orders\EventHandlers\Integration\" />
+    <Folder Include="Orders\EventHandlers\Domain\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.7" />
+  </ItemGroup>
+
 </Project>
