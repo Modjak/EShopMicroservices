@@ -16,38 +16,38 @@ public class StoreBasketCommandValidator : AbstractValidator<StoreBasketCommand>
     }
 }
 public class StoreBasketCommandHandler 
-    //(IBasketRepository repository, DiscountProtoService.DiscountProtoServiceClient discountProto)
+    (IBasketRepository repository, DiscountProtoService.DiscountProtoServiceClient discountProto)
     : ICommandHandler<StoreBasketCommand, StoreBasketResult>
 {
-    private readonly IBasketRepository _repository;
-    private readonly DiscountProtoService.DiscountProtoServiceClient _discountProto;
+    //private readonly IBasketRepository _repository;
+    //private readonly DiscountProtoService.DiscountProtoServiceClient _discountProto;
 
-    public StoreBasketCommandHandler(IBasketRepository repository)
-    {
-        _repository = repository;
+    //public StoreBasketCommandHandler(IBasketRepository repository)
+    //{
+    //    _repository = repository;
 
-        // Create a custom HttpClientHandler that disables SSL certificate validation
-        var handler = new HttpClientHandler
-        {
-            ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
-        };
+    //    // Create a custom HttpClientHandler that disables SSL certificate validation
+    //    var handler = new HttpClientHandler
+    //    {
+    //        ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+    //    };
 
-        // Create the gRPC channel using the custom handler
-        var channel = GrpcChannel.ForAddress("https://localhost:5052", new GrpcChannelOptions
-        {
-            HttpHandler = handler
-        });
+    //    // Create the gRPC channel using the custom handler
+    //    var channel = GrpcChannel.ForAddress("http://localhost:6002", new GrpcChannelOptions
+    //    {
+    //        HttpHandler = handler
+    //    });
 
-        // Create the discountProto client using the custom channel
-        _discountProto = new DiscountProtoService.DiscountProtoServiceClient(channel);
-    }
+    //    // Create the discountProto client using the custom channel
+    //    _discountProto = new DiscountProtoService.DiscountProtoServiceClient(channel);
+    //}
 
     public async Task<StoreBasketResult> Handle(StoreBasketCommand command, CancellationToken cancellationToken)
     {
 
         await DeductDiscount(command.Cart, cancellationToken);
 
-        await _repository.StoreBasket(command.Cart, cancellationToken);
+        await repository.StoreBasket(command.Cart, cancellationToken);
 
         return new StoreBasketResult(command.Cart.UserName);
     }
@@ -57,7 +57,7 @@ public class StoreBasketCommandHandler
 
         foreach (var item in cart.Items)
         {
-            var coupon = await _discountProto.GetDiscountAsync(new GetDiscountRequest
+            var coupon = await discountProto.GetDiscountAsync(new GetDiscountRequest
             {
                 ProductName = item.ProductName
             }, cancellationToken: cancellationToken);

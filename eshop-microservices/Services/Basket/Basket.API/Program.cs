@@ -1,3 +1,4 @@
+using BuildingBlocks.Messaging.MassTransit;
 using Discount.Grpc;
 using Grpc.Net.Client;
 using HealthChecks.UI.Client;
@@ -44,10 +45,22 @@ builder.Services.AddStackExchangeRedisCache(options =>
 builder.Services.AddGrpcClient<DiscountProtoService.DiscountProtoServiceClient>(options =>
 {
     options.Address = new Uri(builder.Configuration["GrpcSettings:DiscountUrl"]!);
+})
+.ConfigurePrimaryHttpMessageHandler(() =>
+{
+    var handler = new HttpClientHandler
+    {
+        ServerCertificateCustomValidationCallback =
+        HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+    };
 
+    return handler;
 });
 
 
+//ASYNC Communication Services
+
+builder.Services.AddMessageBroker(builder.Configuration); //no need assembly since we are in publisher side not consumer
 
 //Cross-cutting concerns
 #region How DI Container Resolves Dependencies
@@ -100,7 +113,6 @@ builder.Services.AddExceptionHandler<CustomExceptionHandler>();
 builder.Services.AddHealthChecks()
     .AddNpgSql(builder.Configuration.GetConnectionString("Database")!)
     .AddRedis(builder.Configuration.GetConnectionString("Redis")!);
-
 
 /* -----------------   End of adding services-----------------------------  */
 
