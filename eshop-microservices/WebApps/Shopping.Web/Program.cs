@@ -7,6 +7,19 @@ builder.Services.AddRefitClient<ICatalogService>()
     .ConfigureHttpClient(c =>
     {
         c.BaseAddress = new Uri(builder.Configuration["ApiSettings:GatewayAddress"]!);
+    })
+    .ConfigurePrimaryHttpMessageHandler(() =>
+    {
+        return new HttpClientHandler
+        {
+            ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => true
+        };
+    });
+
+builder.Services.AddRefitClient<IBasketService>()
+    .ConfigureHttpClient(c =>
+    {
+        c.BaseAddress = new Uri(builder.Configuration["ApiSettings:GatewayAddress"]!);
     });
 
 
